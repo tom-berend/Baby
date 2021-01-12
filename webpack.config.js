@@ -1,11 +1,8 @@
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var path = require('path');
 
-// Checks for available update and returns an instance
-const updateNotifier = require('update-notifier');
-const pkg = require('./node_modules/babygameengine/package.json');
-const notifier = updateNotifier({pkg});
-notifier.notify();
+
+const pkg = require('./node_modules/baby/package.json');
 
 
 // from the console:  npm run build [filename]     // eg: npm run build test
@@ -15,10 +12,10 @@ notifier.notify();
 
 let filename = 'index'  // default
 let procsize = process.argv.length
-for(let i=0;i<procsize;i++){
+for (let i = 0; i < procsize; i++) {
     if (process.argv[i] == '--env')
-        if (i < procsize-1){
-            filename = process.argv[i+1]
+        if (i < procsize - 1) {
+            filename = process.argv[i + 1]
         }
 }
 
@@ -37,7 +34,20 @@ module.exports = {
     module: {
         rules: [{
             test: /\.tsx?$/,
-            use: ["ts-loader"]
+            use: ["ts-loader",{
+                loader: 'webpack-preprocessor-loader',
+                options: {
+                    directives: {
+                        debug: false,
+                        secret: false,
+                    },
+                    params: {
+                        unittest: false,
+                    },
+                },
+            },
+            ],
+
         }]
     },
     output: {
@@ -46,7 +56,10 @@ module.exports = {
     },
     devServer: {
         stats: {
-            index: `dist/${filename}.html/`,
+            contentBase: path.join(__dirname, 'dist'),
+            openPage: '/dist/${filename}.html',
+            index: `${filename}.html`,
+            publicPath: '/dist/',
             performance: false,
             excludeModules: true
         },
@@ -54,8 +67,8 @@ module.exports = {
     plugins: [new HtmlWebpackPlugin(
         {
             filename: `${filename}.html`,
-            templateContent: 
-            `<!DOCTYPE html>
+            templateContent:
+                `<!DOCTYPE html>
             <html xmlns="http://www.w3.org/1999/xhtml">
             <head>
                 <title>Local Testing</title>
@@ -70,7 +83,7 @@ module.exports = {
                 <script src="${filename}.js"></script>
             </body>
             </html>`
-          }
+        }
     )]
-    
+
 }

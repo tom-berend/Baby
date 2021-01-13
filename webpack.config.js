@@ -1,7 +1,5 @@
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var path = require('path');
-
-
 const pkg = require('./node_modules/baby/package.json');
 
 
@@ -19,56 +17,71 @@ for (let i = 0; i < procsize; i++) {
         }
 }
 
-const consoleCyan = '\x1b[1m\x1b[36m\x1b[41m'
+const consoleCyan = '\x1b[1m\x1b[37m\x1b[41m'
 const consoleReset = '\x1b[0m'
-console.log(`${consoleCyan}creating dist/${filename}.html and dist/${filename}.js from src/${filename}.ts${consoleReset}`)
 
 
 
-module.exports = {
-    entry: `./src/${filename}.ts`,
-    target: "web",
-    resolve: {
-        extensions: ['.ts', '.js']
-    },
-    module: {
-        rules: [{
-            test: /\.tsx?$/,
-            use: ["ts-loader",{
-                loader: 'webpack-preprocessor-loader',
-                options: {
-                    directives: {
-                        debug: false,
-                        secret: false,
-                    },
-                    params: {
-                        unittest: false,
+module.exports = (env, argv) => {
+
+    let outbase = ''
+    let outfile = ''
+
+    if(argv.mode=='production'){
+        outbase = 'dist'
+        outfile = filename
+        console.log(`${consoleCyan}creating ${outbase}/${outfile}.html and ${outbase}/${outfile}.js from src/${filename}.ts${consoleReset}`)
+    }else{
+        outbase = ''
+        outfile = 'index'
+        console.log(`${consoleCyan}point your browser at 'localhost:8080'${consoleReset}`)
+    }
+
+    
+    return {
+        entry: `./src/${filename}.ts`,
+        target: "web",
+        resolve: {
+            extensions: ['.ts', '.js']
+        },
+        module: {
+            rules: [{
+                test: /\.tsx?$/,
+                use: ["ts-loader", {
+                    loader: 'webpack-preprocessor-loader',
+                    options: {
+                        directives: {
+                            debug: false,
+                            secret: false,
+                        },
+                        params: {
+                            unittest: false,
+                        },
                     },
                 },
-            },
-            ],
+                ],
 
-        }]
-    },
-    output: {
-        path: path.join(__dirname, 'dist'),
-        filename: `${filename}.js`,
-    },
-    devServer: {
-        stats: {
-            contentBase: path.join(__dirname, 'dist'),
-            openPage: '/dist/${filename}.html',
-            index: `${filename}.html`,
-            publicPath: '/dist/',
-            performance: false,
-            excludeModules: true
+            }]
         },
-    },
-    plugins: [new HtmlWebpackPlugin(
-        {
-            filename: `${filename}.html`,
-            templateContent:
-                `<!DOCTYPE html>
+        output: {
+            path: path.join(__dirname, outbase),
+            filename: `${outfile}.js`,
+        },
+        devServer: {
+            stats: {
+                contentBase: path.join(__dirname, outbase),
+                openPage: `${outfile}.html`,
+                index: `${outfile}.html`,
+                // publicPath: '/dist/',
+                performance: false,
+                excludeModules: true
+            },
+        },
+        plugins: [new HtmlWebpackPlugin(
+            {
+                filename: `${outfile}.html`,
+                templateContent:
+                    `<!DOCTYPE html>
             <html xmlns="http://www.w3.org/1999/xhtml">
             <head>
                 <title>Local Testing</title>
@@ -80,10 +93,11 @@ module.exports = {
             </head>
             <body>
                 <canvas id="renderCanvas" touch-action="none"></canvas>
-                <script src="${filename}.js"></script>
+                <!-- webpack will insert a script tag for the program here -->
             </body>
             </html>`
-        }
-    )]
+            }
+        )]
 
+    }
 }

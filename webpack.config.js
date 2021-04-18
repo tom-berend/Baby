@@ -5,10 +5,14 @@ const pkg = require('./node_modules/baby/package.json');
 
 // from the console:  npm run build [filename]     // eg: npm run build test
 
-// if filename omitted, then creates 'index.html' and 'index.js'  in the /dist directory
-// if filename included then creates 'test.html' and 'test.js
 
-let filename = 'index'  // default
+const consoleCyan = '\x1b[1m\x1b[37m\x1b[41m'
+const consoleReset = '\x1b[0m'
+
+
+// commands are 'npm run watch filename' or 'npm run build filename'
+
+let filename = ''  // default
 let procsize = process.argv.length
 for (let i = 0; i < procsize; i++) {
     if (process.argv[i] == '--env')
@@ -17,8 +21,11 @@ for (let i = 0; i < procsize; i++) {
         }
 }
 
-const consoleCyan = '\x1b[1m\x1b[37m\x1b[41m'
-const consoleReset = '\x1b[0m'
+if(filename==''){
+    console.log(`${consoleCyan}Missing filename, Use 'npm run build filename' or npm run watch filename'${consoleReset} `)
+    throw('')
+}
+
 
 
 
